@@ -1,11 +1,16 @@
 #!/bin/bash
+
+JAVA='java -Xmx2600m -Xms2600m -Xmn32m'
+BROUTER_PROFILES=$(realpath "../../profiles2")
+SRTM_PATH=$(realpath "srtm")
+
+BROUTER_JAR=$(realpath $(ls ../../../brouter-server/target/brouter-server-*-jar-with-dependencies.jar))
+OSMOSIS_JAR=$(realpath "../../pbfparser/osmosis.jar")
+PROTOBUF_JAR=$(realpath "../../pbfparser/protobuf.jar")
+PBFPARSER_JAR=$(realpath "../../pbfparser/pbfparser.jar")
+PLANET_FILE=${PLANET_FILE:-$(realpath "./ontario-latest.osm.pbf")}
+
 set -e
-
-rm -rf planet-old.osm.pbf
-rm -rf planet-new.osm.pbf
-touch mapsnapshpttime.txt
-./osmupdate --verbose --drop-author --compression-level=1 planet-latest.osm.pbf planet-new.osm.pbf &
-
 rm -rf tmp
 
 mkdir tmp
@@ -15,25 +20,16 @@ mkdir waytiles
 mkdir waytiles55
 mkdir nodes55
 
-../../jdk8/bin/java -Xmx6144M -Xms6144M -Xmn256M -cp ../pbfparser.jar:../brouter_fc.jar -Ddeletetmpfiles=true -DuseDenseMaps=true  btools.util.StackSampler btools.mapcreator.OsmFastCutter ../lookups.dat nodetiles waytiles nodes55 waytiles55  bordernids.dat  relations.dat  restrictions.dat  ../all.brf ../trekking.brf ../softaccess.brf ../planet-new.osm.pbf
-
-mv ../planet-latest.osm.pbf ../planet-old.osm.pbf
-mv ../planet-new.osm.pbf ../planet-latest.osm.pbf
+${JAVA} -cp "${OSMOSIS_JAR}:${PROTOBUF_JAR}:${PBFPARSER_JAR}:${BROUTER_JAR}" -Ddeletetmpfiles=true -DuseDenseMaps=true  btools.util.StackSampler btools.mapcreator.OsmFastCutter ${BROUTER_PROFILES}/lookups.dat nodetiles waytiles nodes55 waytiles55  bordernids.dat  relations.dat  restrictions.dat  ${BROUTER_PROFILES}/all.brf ${BROUTER_PROFILES}/trekking.brf ${BROUTER_PROFILES}/softaccess.brf ${PLANET_FILE}
 
 mkdir unodes55
-../../jdk8/bin/java -Xmx6144M -Xms6144M -Xmn256M -cp ../brouter_fc.jar -Ddeletetmpfiles=true -DuseDenseMaps=true btools.util.StackSampler btools.mapcreator.PosUnifier nodes55 unodes55 bordernids.dat bordernodes.dat ../../srtm3_bef
+${JAVA} -cp "${OSMOSIS_JAR}:${PROTOBUF_JAR}:${PBFPARSER_JAR}:${BROUTER_JAR}" -Ddeletetmpfiles=true -DuseDenseMaps=true btools.util.StackSampler btools.mapcreator.PosUnifier nodes55 unodes55 bordernids.dat bordernodes.dat ${SRTM_PATH}
 
 mkdir segments
-../../jdk8/bin/java  -Xmx6144M -Xms6144M -Xmn256M -cp ../brouter_fc.jar -DuseDenseMaps=true -DskipEncodingCheck=true btools.util.StackSampler btools.mapcreator.WayLinker unodes55 waytiles55 bordernodes.dat restrictions.dat ../lookups.dat ../all.brf segments rd5
+${JAVA} -cp "${OSMOSIS_JAR}:${PROTOBUF_JAR}:${PBFPARSER_JAR}:${BROUTER_JAR}" -DuseDenseMaps=true -DskipEncodingCheck=true btools.util.StackSampler btools.mapcreator.WayLinker unodes55 waytiles55 bordernodes.dat restrictions.dat ${BROUTER_PROFILES}/lookups.dat ${BROUTER_PROFILES}/all.brf segments rd5
 
 cd ..
 
-rm -rf segments
-mv tmp/segments segments
-touch -r mapsnapshpttime.txt segments/*.rd5
-rsh -l webrouter brouter.de "rm -rf segments; mkdir segments"
-scp -p segments/* webrouter@brouter.de:segments
-rsh -l webrouter brouter.de ./updateRd5.sh
-
-./scan_world.sh
-./traffic_simulation.sh
+rm -rf ../../segments4
+mv tmp/segments ../../segments4
+rm -rf tmp

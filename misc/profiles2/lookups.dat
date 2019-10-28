@@ -96,6 +96,7 @@ service;0000001250 parking
 service;0000001159 logging
 
 lit;0000809223 yes
+lit;0000809223 no
 
 lanes;0002838405 2
 lanes;0000718138 1
@@ -339,7 +340,7 @@ incline;0000000779 steep
 incline;0000000861 3% 0 1 2 3 0% 1% 2% 3%
 incline;0000000724 5% 4 5 4%
 incline;0000000530 8% 6 7 8 6% 7%
-incline;0000003109 10% 9 10 9% 10°
+incline;0000003109 10% 9 10 9% 10ï¿½
 incline;0000001297 15% 11 12 13 14 15 11% 12% 13% 14%
 incline;0000000997 20% 16 17 18 19 20 16% 17% 18% 19%
 incline;0000000409 25% 21 22 23 24 25 21% 22% 23% 24%
@@ -347,7 +348,7 @@ incline;0000000263 30% 30 40 50 40% 50%
 incline;0000000861 -3% -1 -2 -3 -1% -2% -3%
 incline;0000000724 -5% -4 -5 -4%
 incline;0000000530 -8% -6 -7 -8 -6% -7%
-incline;0000001515 -10% -9 -10 -9% -10°
+incline;0000001515 -10% -9 -10 -9% -10ï¿½
 incline;0000001297 -15% -11 -12 -13 -14 -15 -11% -12% -13% -14%
 incline;0000000997 -20% -16 -17 -18 -19 -20 -16% -17% -18% -19%
 incline;0000000409 -25% -21 -22 -23 -24 -25 -21% -22% -23% -24%
@@ -641,6 +642,29 @@ sidewalk:left:bicycle;0000001722 yes designated
 sidewalk:right:bicycle;0000002667 yes designated
 
 bicycle_road;0000006521 yes designated
+
+width;0000324270 2
+width;0000291865 3
+width;0000209276 1
+width;0000141260 4
+width;0000082241 5
+width;0000082241 10
+width;0000080662 1.5
+width;0000078588 2.5
+width;0000060889 0.5
+
+lanes:forward;0000011111 1
+lanes:forward;0000011111 2
+lanes:forward;0000011111 3
+lanes:forward;0000011111 4
+lanes:forward;0000011111 5
+lanes:forward;0000011111 6
+lanes:backward;0000011111 1
+lanes:backward;0000011111 2
+lanes:backward;0000011111 3
+lanes:backward;0000011111 4
+lanes:backward;0000011111 5
+lanes:backward;0000011111 6
 
 ---context:node
 
