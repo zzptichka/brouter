@@ -666,6 +666,9 @@ lanes:backward;0000011111 4
 lanes:backward;0000011111 5
 lanes:backward;0000011111 6
 
+winter_service;0000011111 yes
+winter_service;0000011111 no
+
 ---context:node
 
 highway;0001314954 bus_stop

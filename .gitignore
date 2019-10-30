@@ -9,3 +9,8 @@ target/
 
 .idea/*
 !/.idea/runConfigurations
+
+misc/scripts/mapcreation/srtm/*
+misc/scripts/mapcreation/*.pbf
+brouter-web/*
+customprofiles/*
