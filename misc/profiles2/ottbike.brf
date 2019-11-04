@@ -8,8 +8,9 @@
 
 #penalty parameters: 0=>no penalty, 1=>maximum penalty
 assign  roadsPenaltyParam = 0.2       # Roads
-assign  sidewalkPenaltyParam = 0.3    # Sidewalks
+assign  sidewalkPenaltyParam = 0.5    # Sidewalks
 assign  surfacePenaltyParam = 0.1     # Surface
+assign  litPenaltyParam = 0.0         # Lit
 
 # Use the following switches to change behaviour
 # (1=yes, 0=no):
@@ -160,6 +161,55 @@ assign onewaypenalty =
 
 # ottbike stuff
 
+assign lanes =
+    if highway=path|footway|cycleway|steps|pedestrian|track then 0
+    else if and lanes:forward=1 not reversedirection=yes then 1
+    else if and lanes:forward=2 not reversedirection=yes then 2
+    else if and lanes:forward=3 not reversedirection=yes then 3
+    else if and lanes:forward=4|5|6 not reversedirection=yes then 4
+    else if and lanes:backward=1 reversedirection=yes then 1
+    else if and lanes:backward=2 reversedirection=yes then 2
+    else if and lanes:backward=3 reversedirection=yes then 3
+    else if and lanes:backward=4|5|6 reversedirection=yes then 4
+    else if lanes=1|2 then 1
+    else if lanes=3|4 then 2
+    else if lanes=5|6 then 3
+    else if lanes=7|8 then 4
+    else 1
+
+assign stepspenalty =
+    if highway=steps then 10
+    else 0
+
+assign lanespenalty = multiply multiply lanes 0.5 roadsPenaltyParam # between 0 and 2
+
+assign cyclewaypenalty =
+    if highway=path|footway|cycleway|steps|pedestrian|track then 0
+    else if cycleway=track then 0
+    else if or or cycleway=lane
+              and cycleway:left=lane reversedirection=yes
+              and cycleway:right=lane not reversedirection=yes
+            then 0.2
+    else if cycleway=shoulder then 0.3
+    else if or
+              or cycleway=shared_lane and cycleway:left=shared_lane reversedirection=yes
+              and cycleway:right=shared_lane not reversedirection=yes
+            then 0.4
+    else 0.5  # no cycling infrastructure
+
+assign maxspeedpenalty =
+    if highway=path|footway|cycleway|steps|pedestrian|track then 0
+    else if cycleway=track then 0
+    else if maxspeed=10|20 then 0
+    else if maxspeed=30 then 0.1
+    else if maxspeed=40 then 0.2
+    else if maxspeed=50 then 0.3
+    else if maxspeed=60 then 0.4
+    else if maxspeed=70 then 0.5
+    else if maxspeed=80 then 0.6
+    else if maxspeed=100 then 0.7
+    else 0.3  # default value - 50kmh
+
 assign surfacepenalty =
     if surface=asphalt|paved then 0
     else if surface=concrete then multiply surfacePenaltyParam 0.5
@@ -173,33 +223,41 @@ assign surfacepenalty =
     else if highway=path|footway then multiply surfacePenaltyParam 0.5
     else 0  #regular roads with no surface tag set
 
-assign roadtypepenalty =
 
-    if highway=trunk|trunk_link               then  multiply roadsPenaltyParam 6
-    else if highway=primary|primary_link      then  multiply roadsPenaltyParam 5
-    else if highway=secondary|secondary_link  then  multiply roadsPenaltyParam 4
-    else if highway=tertiary|tertiary_link    then  multiply roadsPenaltyParam 3
-    else if highway=unclassified              then  multiply roadsPenaltyParam 2
-    else if highway=residential|living_street then  multiply roadsPenaltyParam 1
+assign litpenalty =
+    if lit=no then multiply litPenaltyParam 2
+    else if lit=yes then 0
+    else multiply litPenaltyParam 1
+
+assign roadtypepenalty =        # add penalty for dangerous roads
+
+    if highway=trunk|trunk_link               then 3
+    else if highway=primary|primary_link      then 2.5
+    else if highway=secondary|secondary_link  then 2
+    else if highway=tertiary|tertiary_link    then 1.5
+    else if highway=unclassified              then 1
+    else if highway=residential|living_street then 0.5
     else if highway=service                   then
-            if service=driveway|parking_aisle then multiply roadsPenaltyParam 1
-            else                                   multiply roadsPenaltyParam 2
-    else if highway=road                      then multiply roadsPenaltyParam 2
+            if service=driveway|parking_aisle then 0.5
+            else                                   1
+    else if highway=road                      then 1
     else if highway=track                     then 0.2
-    else if highway=pedestrian                then  0
-    else if highway=cycleway                  then  0       #what about bicycle=designated?
-    else if highway=path                      then  0
-    else if highway=bridleway                 then  0.2
+    else if highway=pedestrian                then 0
+    else if highway=cycleway                  then 0       #what about bicycle=designated?
+    else if highway=path                      then 0
+    else if highway=bridleway                 then 0.2
     else if highway=footway                   then
             if footway=crossing               then 0.3
             else 0.2
-    else if highway=steps                     then  10
+    else if highway=steps                     then  0
     else 0
 
 
 assign sidewalkpenalty =
 
-    if and highway=footway footway=sidewalk then sidewalkPenaltyParam
+    if highway=footway then
+      if footway=sidewalk then multiply sidewalkPenaltyParam 2    # add 0-2 for sidewalks
+      else multiply sidewalkPenaltyParam 1                        # add 0-1 for footways
     else 0
 
 assign smoothnesspenalty =
@@ -214,7 +272,9 @@ assign smoothnesspenalty =
     else 0.1       # unknown
 
 assign widthpenalty =
-    if width=0.5 then 0.20
+    if not highway=path|footway|cycleway|steps|pedestrian|track then 0  # if sharing with cars - see lanespenalty
+    else if oneway=yes then 0         # oneway cycleways are fine
+    else if width=0.5 then 0.20
     else if width=1 then 0.15
     else if width=1.5 then 0.10
     else if width=2 then 0.05
@@ -249,11 +309,13 @@ assign costfactor
 
   add max onewaypenalty accesspenalty
 
+  add stepspenalty     # always add 10 if steps
   add surfacepenalty
-  add roadtypepenalty
+  add multiply roadsPenaltyParam add add add roadtypepenalty lanespenalty maxspeedpenalty cyclewaypenalty
   add smoothnesspenalty
   add widthpenalty
   add sidewalkpenalty
+  add litpenalty
   1.0
 
 # way priorities used for voice hint generation
