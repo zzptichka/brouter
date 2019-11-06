@@ -210,18 +210,22 @@ assign maxspeedpenalty =
     else if maxspeed=100 then 0.7
     else 0.3  # default value - 50kmh
 
+# surface penalty = initial surface penalty + modifiable surfacePenaltyParam parameter
 assign surfacepenalty =
-    if surface=asphalt|paved then 0
-    else if surface=concrete then multiply surfacePenaltyParam 0.5
-    else if surface=fine_gravel then multiply surfacePenaltyParam 0.5
-    else if surface=paving_stones then multiply surfacePenaltyParam 0.5
-    else if surface=wood then multiply surfacePenaltyParam 0.5
-    else if surface=ground then multiply surfacePenaltyParam 1
-    else if surface=grass then multiply surfacePenaltyParam 1
-    else if surface=gravel then multiply surfacePenaltyParam 1
-    else if highway=cycleway then 0       # unknown
-    else if highway=path|footway then multiply surfacePenaltyParam 0.5
-    else 0  #regular roads with no surface tag set
+    if surface=asphalt|paved then add 0 0
+    else if surface=concrete then add 0.1 multiply surfacePenaltyParam 0.1
+    else if surface=fine_gravel then add 0.1 multiply surfacePenaltyParam 0.1
+    else if surface=paving_stones then add 0.2 multiply surfacePenaltyParam 0.2
+    else if surface=wood then add 0.1 multiply surfacePenaltyParam 0.2
+    else if surface=gravel|unpaved then add 0.3 multiply surfacePenaltyParam 0.6
+    else if surface=ground then add 0.5 multiply surfacePenaltyParam 1
+    else if surface=grass then add 0.5 multiply surfacePenaltyParam 1
+    else if path=desire then add 0.5 multiply surfacePenaltyParam 1       # unknown desire path = very bad
+    else if highway=cycleway then add 0.1 0       # unknown cycleway = ok
+    else if and highway=footway footway=crossing|sidewalk then add 0 0       # unknown sidewalk/crossing = ok
+    else if highway=path|footway then add 0.1 multiply surfacePenaltyParam 0.5  #unknown path/footway = bad
+    else if highway=track then add 0 multiply surfacePenaltyParam 0.7         #track = unpaved
+    else 0      # regular roads with no surface tag set - assume asphalt
 
 
 assign litpenalty =
@@ -256,7 +260,7 @@ assign roadtypepenalty =        # add penalty for dangerous roads
 assign sidewalkpenalty =
 
     if highway=footway then
-      if footway=sidewalk then multiply sidewalkPenaltyParam 2    # add 0-2 for sidewalks
+      if footway=sidewalk then multiply sidewalkPenaltyParam 3    # add 0-2 for sidewalks
       else multiply sidewalkPenaltyParam 1                        # add 0-1 for footways
     else 0
 

@@ -670,6 +670,8 @@ lanes:backward;0000011111 6
 winter_service;0000011111 yes
 winter_service;0000011111 no
 
+path;0000011111 desire
+
 ---context:node
 
 highway;0001314954 bus_stop
