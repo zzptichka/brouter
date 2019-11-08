@@ -8,7 +8,7 @@ BROUTER_JAR=$(realpath $(ls ../../../brouter-server/target/brouter-server-*-jar-
 OSMOSIS_JAR=$(realpath "../../pbfparser/osmosis.jar")
 PROTOBUF_JAR=$(realpath "../../pbfparser/protobuf.jar")
 PBFPARSER_JAR=$(realpath "../../pbfparser/pbfparser.jar")
-PLANET_FILE=${PLANET_FILE:-$(realpath "./ontario-latest.osm.pbf")}
+PLANET_FILE=${PLANET_FILE:-$(realpath "./canada-latest.osm.pbf")}
 
 set -e
 rm -rf tmp
