@@ -17,7 +17,7 @@ assign  plowPenaltyParam = 0.0        # Plow penalty
 # (1=yes, 0=no):
 
 assign   processUnusedTags        = true
-assign   consider_elevation   = true   # set to false to ignore elevation in routing
+assign   consider_elevation   = false   # set to false to ignore elevation in routing
 assign   allow_steps          = true   # set to false to disallow steps
 assign   allow_ferries        = true   # set to false to disallow ferries
 assign   ignore_cycleroutes   = false   # set to true for better elevation results
@@ -151,6 +151,7 @@ assign onewaypenalty =
        if ( badoneway ) then
        (
          if ( cycleway=opposite|opposite_lane|opposite_track ) then 0
+         else if ( and reversedirection=yes cycleway:left=opposite|opposite_lane|opposite_track ) then 0
          else if ( oneway:bicycle=no                         ) then 0
          else if ( highway=primary|primary_link              ) then 50
          else if ( highway=secondary|secondary_link          ) then 30
@@ -214,7 +215,7 @@ assign maxspeedpenalty =
 # surface penalty = initial surface penalty + modifiable surfacePenaltyParam parameter
 assign surfacepenalty =
     if surface=asphalt|paved then add 0 0
-    else if surface=concrete then add 0.2
+    else if surface=concrete then 0.2
     else if surface=paving_stones then add 0.2 multiply surfacePenaltyParam 0.2
     else if surface=fine_gravel then add 0.1 multiply surfacePenaltyParam 0.4
     else if surface=wood then add 0.1 multiply surfacePenaltyParam 0.2
