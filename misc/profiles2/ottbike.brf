@@ -12,7 +12,7 @@ assign  sidewalkPenaltyParam = 0.5    # Sidewalks
 assign  surfacePenaltyParam = 0.1     # Surface
 assign  litPenaltyParam = 0.0         # Lit
 assign  plowPenaltyParam = 0.0        # Plow penalty
-assign  stopSignPenaltyParam = 0.1      #
+assign  stopSignPenaltyParam = 0.1    # Stop signs and Traffic lights penalty
 
 # Use the following switches to change behaviour
 # (1=yes, 0=no):
@@ -76,7 +76,7 @@ assign probablyGood = or ispaved and isbike not isunpaved
 #
 assign turncost = if is_ldcr then 0
                   else if junction=roundabout then 0
-                  else 90
+                  else 60
 
 
 #
@@ -178,10 +178,10 @@ assign lanes =
     else if lanes=3|4 then 2
     else if lanes=5|6 then 3
     else if lanes=7|8 then 4
-    else 1
+    else 1  #default - 1/2 lanes
 
 assign stepspenalty =
-    if highway=steps then 10
+    if highway=steps then 40
     else 0
 
 assign lanespenalty = multiply multiply lanes 0.5 roadsPenaltyParam # between 0 and 2
@@ -189,6 +189,7 @@ assign lanespenalty = multiply multiply lanes 0.5 roadsPenaltyParam # between 0 
 assign cyclewaypenalty =
     if highway=path|footway|cycleway|steps|pedestrian|track then 0
     else if cycleway=track then 0
+    else if bicycle=designated then 0.1   # other road mostly used for cycling
     else if or or cycleway=lane
               and cycleway:left=lane reversedirection=yes
               and cycleway:right=lane not reversedirection=yes
@@ -227,7 +228,7 @@ assign surfacepenalty =
     else if highway=cycleway then add 0.1 0       # unknown cycleway = ok (0.1 because it could be gravel?)
     else if and highway=footway footway=crossing|sidewalk then add 0 0       # unknown sidewalk/crossing = ok
     else if highway=path|footway then add 0.1 multiply surfacePenaltyParam 0.3  #unknown path/footway = could be anything
-    else if highway=track then add 0 multiply surfacePenaltyParam 2         #track = unpaved
+    else if highway=track then add 0.5 multiply surfacePenaltyParam 2         #track = unpaved
     else 0      # regular roads with no surface tag set - assume asphalt
 
 
@@ -252,8 +253,9 @@ assign roadtypepenalty =        # add penalty for dangerous roads
     else if highway=primary|primary_link      then 2.5
     else if highway=secondary|secondary_link  then 2
     else if highway=tertiary|tertiary_link    then 1.5
+    else if bicycle=designated                then 0    # for minor roads that are primarily for bicycles (see Exp Farm roads)
     else if highway=unclassified              then 1
-    else if highway=residential|living_street then 0.5
+    else if highway=residential|living_street then 0.4
     else if highway=service                   then
             if service=driveway|parking_aisle then 0.5
             else                                   1
@@ -274,7 +276,7 @@ assign sidewalkpenalty =
 
     if highway=footway then
       if footway=sidewalk then multiply sidewalkPenaltyParam 3    # add 0-3 for sidewalks
-      else multiply sidewalkPenaltyParam 1                        # add 0-1 for footways
+      else multiply sidewalkPenaltyParam 0.5                        # add 0-0.5 for footways
     else 0
 
 assign smoothnesspenalty =
@@ -404,7 +406,7 @@ assign footaccess =
        else if foot= then defaultaccess
        else not foot=private|no
 
-assign stoppenalty multiply stopSignPenaltyParam 100 #0-30 second penalty for stop sign
+assign stoppenalty multiply stopSignPenaltyParam 100 #0-100 meters penalty for stop sign
 assign stoppenalty =
       if highway=stop then
        (
@@ -414,9 +416,19 @@ assign stoppenalty =
          else 0
        )
       else 0
-
+assign signalspenalty multiply stopSignPenaltyParam 100 # 0-100 meters penalty for traffic signals (usually 2-3 signals per intersection)
+assign signalspenalty =
+      if or highway=traffic_signals crossing=traffic_signals then
+       (
+         if direction= then signalspenalty
+         else if and way:iswayreverse direction=backward then signalspenalty
+         else if and not way:iswayreverse direction=forward then signalspenalty
+         else 0
+       )
+      else 0
 assign initialcost =
       add
         if bikeaccess then 0
           else ( if footaccess then 100 else 1000000 )
-        stoppenalty
+      add stoppenalty
+      signalspenalty
