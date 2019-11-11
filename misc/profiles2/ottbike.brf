@@ -12,6 +12,7 @@ assign  sidewalkPenaltyParam = 0.5    # Sidewalks
 assign  surfacePenaltyParam = 0.1     # Surface
 assign  litPenaltyParam = 0.0         # Lit
 assign  plowPenaltyParam = 0.0        # Plow penalty
+assign  stopSignPenaltyParam = 0.1      #
 
 # Use the following switches to change behaviour
 # (1=yes, 0=no):
@@ -380,6 +381,8 @@ assign classifiermask add          isbadoneway
                       add multiply islinktype     8
                           multiply isgoodforcars 16
 
+assign iswayreverse = reversedirection=yes
+
 ---context:node  # following code refers to node tags
 
 assign defaultaccess =
@@ -401,6 +404,19 @@ assign footaccess =
        else if foot= then defaultaccess
        else not foot=private|no
 
+assign stoppenalty multiply stopSignPenaltyParam 100 #0-30 second penalty for stop sign
+assign stoppenalty =
+      if highway=stop then
+       (
+         if direction= then stoppenalty
+         else if and way:iswayreverse direction=backward then stoppenalty
+         else if and not way:iswayreverse direction=forward then stoppenalty
+         else 0
+       )
+      else 0
+
 assign initialcost =
-       if bikeaccess then 0
-       else ( if footaccess then 100 else 1000000 )
+      add
+        if bikeaccess then 0
+          else ( if footaccess then 100 else 1000000 )
+        stoppenalty
