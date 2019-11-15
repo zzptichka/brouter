@@ -115,6 +115,7 @@ assign bikeaccess =
          if vehicle= then defaultaccess
          else not vehicle=private|no
        )
+       else if and bicycle=no|dismount footway=sidewalk then true   # allow sidewalks - handling them in another place
        else not bicycle=private|no|dismount
 
 #
@@ -181,7 +182,7 @@ assign lanes =
     else 1  #default - 1/2 lanes
 
 assign stepspenalty =
-    if highway=steps then 40
+    if highway=steps then 60
     else 0
 
 assign lanespenalty = multiply multiply lanes 0.5 roadsPenaltyParam # between 0 and 2
