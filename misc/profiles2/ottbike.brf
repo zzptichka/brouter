@@ -14,6 +14,14 @@ assign  litPenaltyParam = 0.0         # Lit
 assign  plowPenaltyParam = 0.0        # Plow penalty
 assign  stopSignPenaltyParam = 0.1    # Stop signs and Traffic lights penalty
 
+assign totalPenalty =                 # use for turncost
+    add roadsPenaltyParam
+    add sidewalkPenaltyParam
+    add surfacePenaltyParam
+    add litPenaltyParam
+    add plowPenaltyParam
+    stopSignPenaltyParam
+
 # Use the following switches to change behaviour
 # (1=yes, 0=no):
 
@@ -25,6 +33,7 @@ assign   ignore_cycleroutes   = false   # set to true for better elevation resul
 assign   stick_to_cycleroutes = false   # set to true to just follow cycleroutes
 assign   avoid_unsafe         = false   # set to true to avoid standard highways
 assign   turnInstructionMode  = 1  # 0=none, 1=auto-choose, 2=locus-style, 3=osmand-style
+assign   considerTurnRestrictions = true
 
 assign   validForBikes        = true
 
@@ -74,9 +83,8 @@ assign probablyGood = or ispaved and isbike not isunpaved
 # (Suppressing turncost while following longdistance-cycleways
 # makes them a little bit more magnetic)
 #
-assign turncost = if is_ldcr then 0
-                  else if junction=roundabout then 0
-                  else 60
+assign turncost = if junction=roundabout then 0
+                  else add 50 multiply 10 totalPenalty
 
 
 #
