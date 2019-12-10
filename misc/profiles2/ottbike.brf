@@ -193,7 +193,7 @@ assign stepspenalty =
     if highway=steps then 60
     else 0
 
-assign lanespenalty = multiply multiply lanes 0.5 roadsPenaltyParam # between 0 and 2
+assign lanespenalty = multiply lanes 0.5 # between 0 and 2
 
 assign cyclewaypenalty =
     if highway=path|footway|cycleway|steps|pedestrian|track then 0
@@ -253,8 +253,8 @@ assign snowpenalty =
       then multiply plowPenaltyParam 5
     else if winter_service=yes then 0
     #else if footway=sidewalk then 0       # sidewalks always plowed
-    #else if footway=crossing then 0       # crossings always plowed
-    else multiply plowPenaltyParam 1      # all other roads without tag - increase a bit
+    #else if footway=crossing then 0.5     # consider snowbanks around crossings
+    else multiply plowPenaltyParam 1       # all other roads without tag - increase a bit
 
 assign roadtypepenalty =        # add penalty for dangerous roads
 
@@ -302,9 +302,9 @@ assign smoothnesspenalty =
 assign widthpenalty =
     if not highway=path|footway|cycleway|steps|pedestrian|track then 0  # if sharing with cars - see lanespenalty
     else if oneway=yes then 0         # oneway cycleways are fine
-    else if width=0.5 then 0.20
-    else if width=1 then 0.15
-    else if width=1.5 then 0.10
+    else if width=0.5 then 0.30
+    else if width=1 then 0.20
+    else if width=1.5 then 0.15
     else if width=2 then 0.05
     else if width=2.5|3|4|5|10 then 0
     else 0.1       # unknown
@@ -337,14 +337,19 @@ assign costfactor
 
   add max onewaypenalty accesspenalty
 
-  add stepspenalty     # always add 10 if steps
-  add surfacepenalty
-  add multiply roadsPenaltyParam add add add roadtypepenalty lanespenalty maxspeedpenalty cyclewaypenalty
-  add smoothnesspenalty
-  add widthpenalty
-  add sidewalkpenalty
-  add litpenalty
-  add snowpenalty
+  add stepspenalty     # 0-60 (todo: change to initialcost+costfactor)
+  add surfacepenalty   # 0-3  (asphalt-wet grass)
+  add multiply roadsPenaltyParam
+      add add add
+        roadtypepenalty     # 0-3     (separated-trunk)
+        lanespenalty        # 0-2     (1-4 lanes)
+        maxspeedpenalty     # 0-0.7   (0-100kmh)
+        cyclewaypenalty     # 0-0.5   (track-no cycleway)
+  add smoothnesspenalty     # 0-5     (good-impassable)
+  add widthpenalty          # 0-0.30  (2.5m-0.5m)
+  add sidewalkpenalty       # 0-3     (not sidewalk-sidewalk)
+  add litpenalty            # 0-2     (lit-not lit)
+  add snowpenalty           # 0-5     (plowed-not plowed)
   1.0
 
 # way priorities used for voice hint generation
