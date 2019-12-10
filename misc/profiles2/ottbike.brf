@@ -14,13 +14,13 @@ assign  litPenaltyParam = 0.0         # Lit
 assign  plowPenaltyParam = 0.0        # Plow penalty
 assign  stopSignPenaltyParam = 0.1    # Stop signs and Traffic lights penalty
 
-assign totalPenalty =                 # use for turncost
-    add roadsPenaltyParam
-    add sidewalkPenaltyParam
-    add surfacePenaltyParam
-    add litPenaltyParam
-    add plowPenaltyParam
-    stopSignPenaltyParam
+assign totalPenalty = 1                # use for turncost
+#    add roadsPenaltyParam
+#    add sidewalkPenaltyParam
+#    add surfacePenaltyParam
+#    add litPenaltyParam
+#    add plowPenaltyParam
+#    stopSignPenaltyParam
 
 # Use the following switches to change behaviour
 # (1=yes, 0=no):
@@ -84,7 +84,7 @@ assign probablyGood = or ispaved and isbike not isunpaved
 # makes them a little bit more magnetic)
 #
 assign turncost = if junction=roundabout then 0
-                  else add 50 multiply 10 totalPenalty
+                  else add 30 multiply 10 totalPenalty
 
 
 #
