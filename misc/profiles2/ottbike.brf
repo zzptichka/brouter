@@ -7,20 +7,20 @@
 
 
 #penalty parameters: 0=>no penalty, 1=>maximum penalty
-assign  roadsPenaltyParam = 0.2       # Roads
-assign  sidewalkPenaltyParam = 0.5    # Sidewalks
-assign  surfacePenaltyParam = 0.1     # Surface
-assign  litPenaltyParam = 0.0         # Lit
-assign  plowPenaltyParam = 0.0        # Plow penalty
-assign  stopSignPenaltyParam = 0.1    # Stop signs and Traffic lights penalty
+assign  roadsPen = 0.2       # Roads
+assign  sidewalkPen = 0.5    # Sidewalks
+assign  surfacePen = 0.1     # Surface
+assign  litPen = 0.0         # Lit
+assign  plowPen = 0.0        # Plow penalty
+assign  stopSignPen = 0.1    # Stop signs and Traffic lights penalty
 
 assign totalPenalty = 1                # use for turncost
-#    add roadsPenaltyParam
-#    add sidewalkPenaltyParam
-#    add surfacePenaltyParam
-#    add litPenaltyParam
-#    add plowPenaltyParam
-#    stopSignPenaltyParam
+#    add roadsPen
+#    add sidewalkPen
+#    add surfacePen
+#    add litPen
+#    add plowPen
+#    stopSignPen
 
 # Use the following switches to change behaviour
 # (1=yes, 0=no):
@@ -223,38 +223,38 @@ assign maxspeedpenalty =
     else if maxspeed=100 then 0.7
     else 0.3  # default value - 50kmh
 
-# surface penalty = initial surface penalty + modifiable surfacePenaltyParam parameter
+# surface penalty = initial surface penalty + modifiable surfacePen parameter
 assign surfacepenalty =
     if surface=asphalt|paved then add 0 0
     else if surface=concrete then 0.2
-    else if surface=paving_stones then add 0.2 multiply surfacePenaltyParam 0.2
-    else if surface=fine_gravel then add 0.1 multiply surfacePenaltyParam 0.4
-    else if surface=wood then add 0.1 multiply surfacePenaltyParam 0.2
-    else if surface=gravel|unpaved then add 0.3 multiply surfacePenaltyParam 1
-    else if surface=ground then add 0.5 multiply surfacePenaltyParam 3
-    else if surface=grass then add 0.5 multiply surfacePenaltyParam 3
-    else if path=desire then add 0.5 multiply surfacePenaltyParam 3       # unknown desire path = very bad
+    else if surface=paving_stones then add 0.2 multiply surfacePen 0.2
+    else if surface=fine_gravel then add 0.1 multiply surfacePen 0.4
+    else if surface=wood then add 0.1 multiply surfacePen 0.2
+    else if surface=gravel|unpaved then add 0.3 multiply surfacePen 1
+    else if surface=ground then add 0.5 multiply surfacePen 3
+    else if surface=grass then add 0.5 multiply surfacePen 3
+    else if path=desire then add 0.5 multiply surfacePen 3       # unknown desire path = very bad
     else if highway=cycleway then add 0.1 0       # unknown cycleway = ok (0.1 because it could be gravel?)
     else if and highway=footway footway=crossing|sidewalk then add 0 0       # unknown sidewalk/crossing = ok
-    else if highway=path|footway then add 0.1 multiply surfacePenaltyParam 0.3  #unknown path/footway = could be anything
-    else if highway=track then add 0.5 multiply surfacePenaltyParam 2         #track = unpaved
+    else if highway=path|footway then add 0.1 multiply surfacePen 0.3  #unknown path/footway = could be anything
+    else if highway=track then add 0.5 multiply surfacePen 2         #track = unpaved
     else 0      # regular roads with no surface tag set - assume asphalt
 
 
 assign litpenalty =
-    if lit=no then multiply litPenaltyParam 2
+    if lit=no then multiply litPen 2
     else if lit=yes then 0
-    else multiply litPenaltyParam 1
+    else multiply litPen 1
 
 assign snowpenalty =
     if or or winter_service=no
           surface=ground|grass|sand|gravel|fine_gravel
           path=desire
-      then multiply plowPenaltyParam 5
+      then multiply plowPen 5
     else if winter_service=yes then 0
     #else if footway=sidewalk then 0       # sidewalks always plowed
     #else if footway=crossing then 0.5     # consider snowbanks around crossings
-    else multiply plowPenaltyParam 1       # all other roads without tag - increase a bit
+    else multiply plowPen 1       # all other roads without tag - increase a bit
 
 assign roadtypepenalty =        # add penalty for dangerous roads
 
@@ -284,8 +284,8 @@ assign roadtypepenalty =        # add penalty for dangerous roads
 assign sidewalkpenalty =
 
     if highway=footway then
-      if footway=sidewalk then multiply sidewalkPenaltyParam 3    # add 0-3 for sidewalks
-      else multiply sidewalkPenaltyParam 0.5                        # add 0-0.5 for footways
+      if footway=sidewalk then multiply sidewalkPen 3    # add 0-3 for sidewalks
+      else multiply sidewalkPen 0.5                        # add 0-0.5 for footways
     else 0
 
 assign smoothnesspenalty =
@@ -339,7 +339,7 @@ assign costfactor
 
   add stepspenalty     # 0-60 (todo: change to initialcost+costfactor)
   add surfacepenalty   # 0-3  (asphalt-wet grass)
-  add multiply roadsPenaltyParam
+  add multiply roadsPen
       add add add
         roadtypepenalty     # 0-3     (separated-trunk)
         lanespenalty        # 0-2     (1-4 lanes)
@@ -420,7 +420,7 @@ assign footaccess =
        else if foot= then defaultaccess
        else not foot=private|no
 
-assign stoppenalty multiply stopSignPenaltyParam 100 #0-100 meters penalty for stop sign
+assign stoppenalty multiply stopSignPen 100 #0-100 meters penalty for stop sign
 assign stoppenalty =
       if highway=stop then
        (
@@ -430,7 +430,7 @@ assign stoppenalty =
          else 0
        )
       else 0
-assign signalspenalty multiply stopSignPenaltyParam 100 # 0-100 meters penalty for traffic signals (usually 2-3 signals per intersection)
+assign signalspenalty multiply stopSignPen 100 # 0-100 meters penalty for traffic signals (usually 2-3 signals per intersection)
 assign signalspenalty =
       if or highway=traffic_signals crossing=traffic_signals then
        (
