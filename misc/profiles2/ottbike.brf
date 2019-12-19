@@ -140,7 +140,8 @@ assign footaccess =
 # otherwise access is forbidden
 #
 assign accesspenalty =
-       if bikeaccess then 0
+       if access=no then 10000
+       else if bikeaccess then 0
        else if footaccess then 4
        else 10000
 
